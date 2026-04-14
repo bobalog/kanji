@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>쪽집게 한자 외우기 v1</title>
+  <style>
+    :root{
+      --bg:#fff8fc;
+      --bg2:#fff2f8;
+      --card:#ffffff;
+      --line:#f5bfd6;
+      --pink:#f062a6;
+      --pink2:#ff8fbd;
+      --pink3:#ffd7e8;
+      --text:#5a3550;
+      --sub:#8f6680;
+      --ok:#45b97c;
+      --bad:#ef6c86;
+      --lav:#e8d3ff;
+      --lav2:#f5edff;
+      --shadow:0 10px 30px rgba(240,98,166,.12);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,var(--bg),var(--bg2));
+    }
+    .wrap{max-width:1180px;margin:0 auto;padding:18px 14px 40px}
+    .hero{
+      background:rgba(255,255,255,.9);
+      border:2px solid var(--line);
+      border-radius:32px;
+      padding:22px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero:before,.hero:after{content:"🎀";position:absolute;opacity:.18;font-size:46px}
+    .hero:before{top:10px;right:18px}.hero:after{left:18px;bottom:10px}
+    h1{margin:0 0 8px;color:var(--pink);font-size:32px}
+    .hero p{margin:0;line-height:1.65;color:var(--sub)}
+    .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+    .tab{
+      border:2px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;
+      color:var(--pink);font-weight:700;cursor:pointer
+    }
+    .tab.active{background:var(--pink);color:#fff;border-color:var(--pink)}
+    .layout{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+    .card{
+      background:rgba(255,255,255,.95);border:2px solid var(--line);border-radius:var(--radius);
+      box-shadow:var(--shadow);padding:18px
+    }
+    .section-title{font-size:22px;font-weight:800;color:var(--pink);margin:0 0 10px}
+    .subtext{font-size:13px;color:var(--sub);line-height:1.6}
+    .mode-row,.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+    .mode,.btn,.choice,.mini-btn{
+      border:none;cursor:pointer;transition:.18s ease;font-weight:700
+    }
+    .mode,.btn,.mini-btn{
+      border-radius:999px;padding:10px 14px
+    }
+    .mode{background:#fff;border:2px solid var(--lav);color:#8e5dd0}
+    .mode.active{background:#a86cf7;color:#fff;border-color:#a86cf7}
+    .btn.primary{background:var(--pink);color:#fff}
+    .btn.soft{background:#fff;color:var(--pink);border:2px solid var(--line)}
+    .btn.lav{background:#fff;color:#8e5dd0;border:2px solid var(--lav)}
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+    .stat{background:#fff;border:2px solid var(--pink3);border-radius:20px;padding:12px;text-align:center}
+    .stat .n{font-size:20px;font-weight:800;color:var(--pink)}
+    .progress{height:14px;background:#ffe6f0;border-radius:999px;overflow:hidden;border:1px solid #ffd3e4;margin-top:12px}
+    .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--pink2),var(--pink));transition:.25s ease}
+    .study-box,.quiz-box,.write-box,.list-box,.wrong-item,.stroke-box{
+      border-radius:22px;padding:16px;border:2px solid var(--pink3);background:#fffafc
+    }
+    .big{font-size:54px;font-weight:800;line-height:1.15}
+    .mid{font-size:26px;font-weight:800;line-height:1.4}
+    .label{font-size:12px;font-weight:800;color:var(--pink);margin-bottom:8px}
+    .meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .meta .chip{background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px}
+    .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .choice{
+      border-radius:18px;padding:14px;text-align:left;background:#fff;border:2px solid var(--line);color:var(--text);font-size:17px
+    }
+    .choice.correct{border-color:#a7e2c3;background:#f1fff7;color:#1f7d50}
+    .choice.wrong{border-color:#ffc4cf;background:#fff4f6;color:#bf4561}
+    .answer-msg{margin-top:12px;padding:12px 14px;border-radius:18px;font-weight:800;line-height:1.6}
+    .answer-msg.ok{background:#effcf5;border:2px solid #bde8cf;color:#238155}
+    .answer-msg.bad{background:#fff2f5;border:2px solid #ffc8d3;color:#c44f68}
+    .write-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+    .square{
+      aspect-ratio:1/1;border:2px dashed #f0b9d2;border-radius:18px;background:
+      linear-gradient(90deg,transparent 49.5%,#f9d6e6 49.5%,#f9d6e6 50.5%,transparent 50.5%),
+      linear-gradient(transparent 49.5%,#f9d6e6 49.5%,#f9d6e6 50.5%,transparent 50.5%),
+      #fff;
+    }
+    .list-box{max-height:340px;overflow:auto}
+    .vocab-item{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 0;border-bottom:1px dashed #f0c8d8}
+    .vocab-item:last-child{border-bottom:none}
+    .vocab-main{font-weight:800}
+    .vocab-sub{font-size:13px;color:var(--sub);margin-top:4px}
+    .badge{display:inline-block;background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--pink);font-weight:800}
+    .wrong-list{display:grid;gap:10px;max-height:320px;overflow:auto}
+    .wrong-item{background:#fff6fa}
+    .mini-btn{background:#fff;border:2px solid var(--line);color:var(--pink);padding:7px 11px;font-size:12px}
+    .form-grid{display:grid;gap:10px}
+    input,textarea,select{
+      width:100%;padding:12px 14px;border-radius:18px;border:2px solid var(--line);background:#fff;color:var(--text);font-size:14px
+    }
+    textarea{min-height:78px;resize:vertical}
+    .hint{font-size:13px;color:var(--sub);line-height:1.6}
+    .foot{margin-top:10px;font-size:12px;color:var(--sub);line-height:1.7}
+    @media (max-width:950px){.layout{grid-template-columns:1fr}.stat-grid{grid-template-columns:repeat(2,1fr)}.choices{grid-template-columns:1fr}.big{font-size:42px}.mid{font-size:22px}.write-grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>🌸 쪽집게 한자 외우기 v1</h1>
+      <p>
+        교수님 스타일에 맞춰 <b>한자 ↔ 히라가나</b>를 빠르게 외우는 사이트야 💖<br>
+        웹에서는 직접 손글씨 채점은 못 하니까, <b>보고 → 종이에 쓰기 → 정답 확인</b> 방식과 <b>4지선다 퀴즈</b>를 같이 넣었어.
+        1과~6과, 그리고 <b>총망라 퀴즈</b> 탭까지 준비했어 ✨
+      </p>
+    </section>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div class="layout">
+      <main class="card">
+        <h2 class="section-title">🎯 학습 / 퀴즈</h2>
+        <div class="subtext">문제에서 뜻풀이는 없다고 했으니까, 핵심은 <b>한자 보고 히라가나</b>, <b>히라가나 보고 한자</b>를 빠르게 맞히는 거야.</div>
+
+        <div class="mode-row" id="modes"></div>
+
+        <div class="progress"><div class="fill" id="fill"></div></div>
+        <div class="subtext" id="progressText" style="margin-top:8px">진도 0%</div>
+
+        <div class="toolbar">
+          <button class="btn primary" id="shuffleBtn">랜덤 시작</button>
+          <button class="btn soft" id="prevBtn">이전</button>
+          <button class="btn soft" id="nextBtn">다음</button>
+          <button class="btn lav" id="toggleAnswerBtn">정답 보기</button>
+        </div>
+
+        <div id="contentArea"></div>
+      </main>
+
+      <aside style="display:grid;gap:18px">
+        <section class="card">
+          <h3 class="section-title">📊 오늘의 체크</h3>
+          <div class="stat-grid">
+            <div class="stat"><div class="n" id="totalCount">0</div><div>전체</div></div>
+            <div class="stat"><div class="n" id="solvedCount">0</div><div>맞힘</div></div>
+            <div class="stat"><div class="n" id="wrongCount">0</div><div>오답</div></div>
+            <div class="stat"><div class="n" id="currentCount">0</div><div>현재</div></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3 class="section-title">💗 오답노트</h3>
+          <div class="wrong-list" id="wrongList"></div>
+        </section>
+
+        <section class="card">
+          <h3 class="section-title">➕ 카드 추가</h3>
+          <div class="form-grid">
+            <select id="addCategory"></select>
+            <input id="addKanji" placeholder="한자 표기" />
+            <input id="addReading" placeholder="히라가나 읽기" />
+            <input id="addMeaning" placeholder="뜻" />
+            <button class="btn primary" id="addBtn">카드 추가</button>
+          </div>
+          <div class="foot">나중에 외울 단어 생기면 바로 추가 가능해 ✍️</div>
+        </section>
+
+        <section class="card">
+          <h3 class="section-title">📝 쓰기 연습 팁</h3>
+          <div class="hint">
+            웹사이트는 <b>획순 자동 애니메이션</b>을 바로 넣으려면 별도 데이터가 필요해.<br>
+            그래서 v1은 <b>쓰기칸 + 정답 확인</b> 중심으로 만들었어.<br>
+            진짜 획순 애니메이션은 나중에 <b>한자별 SVG/JSON 데이터</b>가 있으면 붙일 수 있어 🎯
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const baseDeck = {
+      "1과": [
+        {kanji:"方言", reading:"ほうげん", meaning:"방언, 사투리"},
+        {kanji:"意味", reading:"いみ", meaning:"의미, 뜻"},
+        {kanji:"苦い", reading:"にがい", meaning:"쓰다"},
+        {kanji:"船", reading:"ふね", meaning:"배, 선박"},
+        {kanji:"仕事", reading:"しごと", meaning:"일, 직업"},
+        {kanji:"数学", reading:"すうがく", meaning:"수학"},
+        {kanji:"授業", reading:"じゅぎょう", meaning:"수업"},
+        {kanji:"お菓子", reading:"おかし", meaning:"과자"},
+        {kanji:"全部", reading:"ぜんぶ", meaning:"전부, 모두"},
+        {kanji:"半分", reading:"はんぶん", meaning:"절반"},
+        {kanji:"合格", reading:"ごうかく", meaning:"합격"},
+        {kanji:"腕時計", reading:"うでどけい", meaning:"손목시계"},
+        {kanji:"心配", reading:"しんぱい", meaning:"걱정"},
+        {kanji:"音楽", reading:"おんがく", meaning:"음악"}
+      ],
+      "2과": [
+        {kanji:"花火", reading:"はなび", meaning:"불꽃놀이"},
+        {kanji:"祭り", reading:"まつり", meaning:"축제"},
+        {kanji:"中止", reading:"ちゅうし", meaning:"중지, 취소"},
+        {kanji:"大雨", reading:"おおあめ", meaning:"큰비, 폭우"},
+        {kanji:"薬", reading:"くすり", meaning:"약"},
+        {kanji:"掃除", reading:"そうじ", meaning:"청소"},
+        {kanji:"化粧", reading:"けしょう", meaning:"화장"},
+        {kanji:"交番", reading:"こうばん", meaning:"파출소"},
+        {kanji:"芸能人", reading:"げいのうじん", meaning:"연예인"},
+        {kanji:"彼氏", reading:"かれし", meaning:"남자친구"},
+        {kanji:"空", reading:"そら", meaning:"하늘"},
+        {kanji:"週末", reading:"しゅうまつ", meaning:"주말"},
+        {kanji:"花屋", reading:"はなや", meaning:"꽃집"},
+        {kanji:"写真", reading:"しゃしん", meaning:"사진"}
+      ],
+      "3과": [
+        {kanji:"お土産", reading:"おみやげ", meaning:"기념품, 선물"},
+        {kanji:"字", reading:"じ", meaning:"글자, 글씨"},
+        {kanji:"紙", reading:"かみ", meaning:"종이"},
+        {kanji:"飛行機", reading:"ひこうき", meaning:"비행기"},
+        {kanji:"連絡先", reading:"れんらくさき", meaning:"연락처"},
+        {kanji:"冷蔵庫", reading:"れいぞうこ", meaning:"냉장고"},
+        {kanji:"発音", reading:"はつおん", meaning:"발음"},
+        {kanji:"時々", reading:"ときどき", meaning:"때때로, 가끔"},
+        {kanji:"窓", reading:"まど", meaning:"창문"},
+        {kanji:"交通", reading:"こうつう", meaning:"교통"},
+        {kanji:"気分", reading:"きぶん", meaning:"기분"},
+        {kanji:"彼女", reading:"かのじょ", meaning:"여자친구 / 그녀"},
+        {kanji:"部屋", reading:"へや", meaning:"방"},
+        {kanji:"頭", reading:"あたま", meaning:"머리"}
+      ],
+      "4과": [
+        {kanji:"面接", reading:"めんせつ", meaning:"면접"},
+        {kanji:"兄", reading:"あに", meaning:"형, 오빠"},
+        {kanji:"地下", reading:"ちか", meaning:"지하"},
+        {kanji:"練習", reading:"れんしゅう", meaning:"연습"},
+        {kanji:"試合", reading:"しあい", meaning:"시합, 경기"},
+        {kanji:"予定", reading:"よてい", meaning:"예정"},
+        {kanji:"残業", reading:"ざんぎょう", meaning:"잔업, 야근"},
+        {kanji:"美術館", reading:"びじゅつかん", meaning:"미술관"},
+        {kanji:"自分", reading:"じぶん", meaning:"자신, 자기"},
+        {kanji:"約束", reading:"やくそく", meaning:"약속"},
+        {kanji:"準備", reading:"じゅんび", meaning:"준비"},
+        {kanji:"散歩", reading:"さんぽ", meaning:"산책"},
+        {kanji:"遅刻", reading:"ちこく", meaning:"지각"},
+        {kanji:"飲み会", reading:"のみかい", meaning:"술자리, 회식"}
+      ],
+      "5과": [
+        {kanji:"応援", reading:"おうえん", meaning:"응원"},
+        {kanji:"来週", reading:"らいしゅう", meaning:"다음 주"},
+        {kanji:"物", reading:"もの", meaning:"물건, 것"},
+        {kanji:"帰国", reading:"きこく", meaning:"귀국"},
+        {kanji:"結婚", reading:"けっこん", meaning:"결혼"},
+        {kanji:"先輩", reading:"せんぱい", meaning:"선배"},
+        {kanji:"娘", reading:"むすめ", meaning:"딸"},
+        {kanji:"案内", reading:"あんない", meaning:"안내"},
+        {kanji:"出張", reading:"しゅっちょう", meaning:"출장"},
+        {kanji:"台風", reading:"たいふう", meaning:"태풍"},
+        {kanji:"自転車", reading:"じてんしゃ", meaning:"자전거"},
+        {kanji:"道", reading:"みち", meaning:"길, 도로"},
+        {kanji:"相談", reading:"そうだん", meaning:"상담, 의논"}
+      ],
+      "6과": [
+        {kanji:"最近", reading:"さいきん", meaning:"최근, 요즘"},
+        {kanji:"連絡", reading:"れんらく", meaning:"연락"},
+        {kanji:"声", reading:"こえ", meaning:"목소리"},
+        {kanji:"無理", reading:"むり", meaning:"무리"},
+        {kanji:"病院", reading:"びょういん", meaning:"병원"},
+        {kanji:"紹介", reading:"しょうかい", meaning:"소개"},
+        {kanji:"今度", reading:"こんど", meaning:"이번, 다음에"},
+        {kanji:"予約", reading:"よやく", meaning:"예약"},
+        {kanji:"体調", reading:"たいちょう", meaning:"몸 상태, 컨디션"},
+        {kanji:"以上", reading:"いじょう", meaning:"이상"},
+        {kanji:"免許", reading:"めんきょ", meaning:"면허"},
+        {kanji:"着物", reading:"きもの", meaning:"기모노"},
+        {kanji:"新幹線", reading:"しんかんせん", meaning:"신칸센"}
+      ]
+    };
+
+    const MODES = [
+      {key:"flash", label:"플래시카드"},
+      {key:"kanjiToReading", label:"한자→히라가나"},
+      {key:"readingToKanji", label:"히라가나→한자"},
+      {key:"write", label:"종이쓰기 모드"},
+      {key:"list", label:"단어장 보기"}
+    ];
+
+    let extraDeck = JSON.parse(localStorage.getItem("kanji_extra_v1") || "{}");
+    let wrongNotes = JSON.parse(localStorage.getItem("kanji_wrong_v1") || "[]");
+    let solved = JSON.parse(localStorage.getItem("kanji_solved_v1") || "{}");
+    let currentTab = "1과";
+    let currentMode = "flash";
+    let currentIndex = 0;
+    let reveal = false;
+    let currentChoices = [];
+    let currentAnswered = false;
+
+    function save(){
+      localStorage.setItem("kanji_extra_v1", JSON.stringify(extraDeck));
+      localStorage.setItem("kanji_wrong_v1", JSON.stringify(wrongNotes));
+      localStorage.setItem("kanji_solved_v1", JSON.stringify(solved));
+    }
+
+    function getDeck(){
+      const merged = JSON.parse(JSON.stringify(baseDeck));
+      Object.keys(extraDeck).forEach(k=>{
+        if(!merged[k]) merged[k]=[];
+        merged[k] = merged[k].concat(extraDeck[k]);
+      });
+      return merged;
+    }
+
+    function getTabs(){
+      return [...Object.keys(baseDeck), "총망라 퀴즈"];
+    }
+
+    function getList(tab){
+      const deck = getDeck();
+      if(tab === "총망라 퀴즈"){
+        return Object.keys(baseDeck).flatMap(k => deck[k] || []);
+      }
+      return deck[tab] || [];
+    }
+
+    function shuffle(arr){
+      const copy = [...arr];
+      for(let i=copy.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [copy[i],copy[j]] = [copy[j],copy[i]];
+      }
+      return copy;
+    }
+
+    function pickChoices(correctValue, pool, field){
+      const others = shuffle(pool.filter(v=>v[field] !== correctValue)).slice(0,3).map(v=>v[field]);
+      return shuffle([correctValue, ...others]);
+    }
+
+    function currentList(){ return getList(currentTab); }
+    function currentCard(){ return currentList()[currentIndex] || null; }
+    function cardId(card){ return `${currentTab}__${card.kanji}__${card.reading}`; }
+
+    function prepareChoices(){
+      const card = currentCard();
+      if(!card) { currentChoices=[]; return; }
+      const pool = currentList().length >= 4 ? currentList() : Object.values(getDeck()).flat();
+      if(currentMode === "kanjiToReading") currentChoices = pickChoices(card.reading, pool, "reading");
+      else if(currentMode === "readingToKanji") currentChoices = pickChoices(card.kanji, pool, "kanji");
+      else currentChoices = [];
+      currentAnswered = false;
+      reveal = false;
+    }
+
+    function renderTabs(){
+      const tabs = document.getElementById("tabs");
+      tabs.innerHTML = "";
+      getTabs().forEach(tab => {
+        const b = document.createElement("button");
+        b.className = "tab" + (tab===currentTab?" active":"");
+        b.textContent = tab;
+        b.onclick = () => {
+          currentTab = tab;
+          currentIndex = 0;
+          prepareChoices();
+          render();
+        };
+        tabs.appendChild(b);
+      });
+
+      const sel = document.getElementById("addCategory");
+      sel.innerHTML = "";
+      Object.keys(baseDeck).forEach(tab => {
+        const op = document.createElement("option");
+        op.value = tab; op.textContent = tab; sel.appendChild(op);
+      });
+    }
+
+    function renderModes(){
+      const modes = document.getElementById("modes");
+      modes.innerHTML = "";
+      MODES.forEach(m => {
+        const b = document.createElement("button");
+        b.className = "mode" + (m.key===currentMode?" active":"");
+        b.textContent = m.label;
+        b.onclick = () => {
+          currentMode = m.key;
+          currentIndex = 0;
+          prepareChoices();
+          render();
+        };
+        modes.appendChild(b);
+      });
+    }
+
+    function renderStats(){
+      const list = currentList();
+      const solvedCount = list.filter(c => solved[cardId(c)]).length;
+      document.getElementById("totalCount").textContent = list.length;
+      document.getElementById("solvedCount").textContent = solvedCount;
+      document.getElementById("wrongCount").textContent = wrongNotes.length;
+      document.getElementById("currentCount").textContent = list.length ? `${currentIndex+1}` : 0;
+      const progress = list.length ? Math.round((solvedCount / list.length) * 100) : 0;
+      document.getElementById("fill").style.width = progress + "%";
+      document.getElementById("progressText").textContent = `진도 ${progress}% · ${solvedCount}/${list.length}`;
+    }
+
+    function markWrong(card, prompt, correct){
+      wrongNotes.unshift({
+        tab: currentTab,
+        kanji: card.kanji,
+        reading: card.reading,
+        meaning: card.meaning,
+        prompt,
+        correct
+      });
+      save();
+      renderWrong();
+    }
+
+    function renderFlash(card){
+      return `
+        <div class="study-box">
+          <div class="label">플래시카드</div>
+          <div class="big">${card.kanji}</div>
+          <div class="meta">
+            <div class="chip"><div class="label">읽기</div><div class="mid">${reveal ? card.reading : '???'}</div></div>
+            <div class="chip"><div class="label">뜻</div><div class="mid" style="font-size:18px">${reveal ? card.meaning : '가리고 외워보기'}</div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuiz(card, direction){
+      const prompt = direction === "kanjiToReading" ? card.kanji : card.reading;
+      const want = direction === "kanjiToReading" ? card.reading : card.kanji;
+      const label = direction === "kanjiToReading" ? "한자를 보고 알맞은 히라가나를 고르기" : "히라가나를 보고 알맞은 한자를 고르기";
+      return `
+        <div class="quiz-box">
+          <div class="label">${label}</div>
+          <div class="big">${prompt}</div>
+          <div class="meta">
+            <div class="chip"><div class="label">뜻</div><div class="mid" style="font-size:18px">${card.meaning}</div></div>
+            <div class="chip"><div class="label">정답 보기</div><div class="mid" style="font-size:18px">${reveal ? want : '선택 후 확인'}</div></div>
+          </div>
+          <div class="choices" id="choicesArea"></div>
+          <div id="answerArea"></div>
+        </div>
+      `;
+    }
+
+    function renderWrite(card){
+      return `
+        <div class="write-box">
+          <div class="label">종이에 직접 쓰기 모드</div>
+          <div class="mid">문제: <b>${Math.random() < 0.5 ? card.kanji : card.reading}</b></div>
+          <div class="hint" style="margin-top:8px">종이에 직접 써보고, 아래 정답 보기로 확인해줘 ✍️ 시험이 실제 쓰기라서 이 방식이 제일 효율적이야.</div>
+          <div class="write-grid">
+            <div class="square"></div><div class="square"></div><div class="square"></div><div class="square"></div>
+          </div>
+          <div class="stroke-box" style="margin-top:14px">
+            <div class="label">정답 / 체크</div>
+            <div class="mid" style="font-size:20px">한자: ${reveal ? card.kanji : '가리고 써보기'} </div>
+            <div class="mid" style="font-size:20px;margin-top:8px">히라가나: ${reveal ? card.reading : '가리고 써보기'} </div>
+            <div class="mid" style="font-size:16px;margin-top:8px">뜻: ${reveal ? card.meaning : '가리고 써보기'} </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderList(list){
+      return `
+        <div class="list-box">
+          ${list.map(item => `
+            <div class="vocab-item">
+              <div>
+                <div class="vocab-main">${item.kanji}</div>
+                <div class="vocab-sub">${item.reading} · ${item.meaning}</div>
+              </div>
+              <div class="badge">단어</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderContent(){
+      const area = document.getElementById("contentArea");
+      const card = currentCard();
+      if(!card){
+        area.innerHTML = `<div class="study-box"><div class="mid">카드가 없어 💗 오른쪽에서 추가해줘!</div></div>`;
+        return;
+      }
+
+      if(currentMode === "flash") area.innerHTML = renderFlash(card);
+      else if(currentMode === "kanjiToReading") area.innerHTML = renderQuiz(card, "kanjiToReading");
+      else if(currentMode === "readingToKanji") area.innerHTML = renderQuiz(card, "readingToKanji");
+      else if(currentMode === "write") area.innerHTML = renderWrite(card);
+      else area.innerHTML = renderList(currentList());
+
+      if(currentMode === "kanjiToReading" || currentMode === "readingToKanji"){
+        const card2 = currentCard();
+        const isK2R = currentMode === "kanjiToReading";
+        const correct = isK2R ? card2.reading : card2.kanji;
+        const prompt = isK2R ? card2.kanji : card2.reading;
+        const choicesArea = document.getElementById("choicesArea");
+        const answerArea = document.getElementById("answerArea");
+        choicesArea.innerHTML = "";
+        currentChoices.forEach(choice => {
+          const b = document.createElement("button");
+          b.className = "choice";
+          b.textContent = choice;
+          b.onclick = () => {
+            if(currentAnswered) return;
+            currentAnswered = true;
+            reveal = true;
+            if(choice === correct){
+              b.classList.add("correct");
+              solved[cardId(card2)] = true;
+              save();
+              answerArea.innerHTML = `<div class="answer-msg ok">정답이야 🌟<br>${card2.kanji} → ${card2.reading}<br>${card2.meaning}</div>`;
+            } else {
+              b.classList.add("wrong");
+              [...choicesArea.children].forEach(el => { if(el.textContent === correct) el.classList.add("correct"); });
+              markWrong(card2, prompt, correct);
+              answerArea.innerHTML = `<div class="answer-msg bad">오답이야 💦<br>정답: ${correct}<br>${card2.kanji} · ${card2.reading} · ${card2.meaning}</div>`;
+            }
+            renderStats();
+          };
+          choicesArea.appendChild(b);
+        });
+      }
+    }
+
+    function renderWrong(){
+      const wrap = document.getElementById("wrongList");
+      if(!wrongNotes.length){
+        wrap.innerHTML = `<div class="hint">아직 오답이 없어 💖</div>`;
+        return;
+      }
+      wrap.innerHTML = wrongNotes.map((w, idx) => `
+        <div class="wrong-item">
+          <div class="badge">${w.tab}</div>
+          <div style="margin-top:8px;font-weight:800">${w.kanji}</div>
+          <div class="subtext" style="margin-top:4px">${w.reading} · ${w.meaning}</div>
+          <div class="subtext" style="margin-top:8px"><b>문제:</b> ${w.prompt}</div>
+          <div class="subtext"><b>정답:</b> ${w.correct}</div>
+          <div style="margin-top:8px"><button class="mini-btn" data-del="${idx}">삭제</button></div>
+        </div>
+      `).join("");
+      wrap.querySelectorAll("[data-del]").forEach(btn => {
+        btn.onclick = () => {
+          wrongNotes.splice(Number(btn.dataset.del),1);
+          save();
+          renderWrong();
+          renderStats();
+        };
+      });
+    }
+
+    function addCard(){
+      const category = document.getElementById("addCategory").value;
+      const kanji = document.getElementById("addKanji").value.trim();
+      const reading = document.getElementById("addReading").value.trim();
+      const meaning = document.getElementById("addMeaning").value.trim();
+      if(!kanji || !reading || !meaning) return;
+      if(!extraDeck[category]) extraDeck[category] = [];
+      extraDeck[category].push({kanji, reading, meaning});
+      document.getElementById("addKanji").value = "";
+      document.getElementById("addReading").value = "";
+      document.getElementById("addMeaning").value = "";
+      save();
+      if(currentTab === category){ render(); }
+    }
+
+    function render(){
+      renderTabs();
+      renderModes();
+      renderStats();
+      renderContent();
+      renderWrong();
+    }
+
+    document.getElementById("shuffleBtn").onclick = () => {
+      const list = currentList();
+      if(!list.length) return;
+      currentIndex = Math.floor(Math.random() * list.length);
+      prepareChoices();
+      render();
+    };
+    document.getElementById("prevBtn").onclick = () => {
+      if(currentIndex > 0) currentIndex--;
+      prepareChoices();
+      render();
+    };
+    document.getElementById("nextBtn").onclick = () => {
+      if(currentIndex < currentList().length - 1) currentIndex++;
+      else currentIndex = 0;
+      prepareChoices();
+      render();
+    };
+    document.getElementById("toggleAnswerBtn").onclick = () => {
+      reveal = !reveal;
+      renderContent();
+    };
+    document.getElementById("addBtn").onclick = addCard;
+
+    prepareChoices();
+    render();
+  </script>
+</body>
+</html>
