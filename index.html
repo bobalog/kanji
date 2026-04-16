@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>쪽집게 한자 외우기 v1</title>
   <style>
+
+    @font-face{
+      font-family:"KleeOneLocal";
+      src:url("./KleeOne-Regular.ttf") format("truetype");
+      font-weight:400;
+      font-style:normal;
+      font-display:swap;
+    }
     :root{
       --bg:#fff8fc;
       --bg2:#fff2f8;
@@ -28,6 +36,14 @@
       font-family:Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
       color:var(--text);
       background:linear-gradient(180deg,var(--bg),var(--bg2));
+    }
+    .jp{
+      font-family:"KleeOneLocal","Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+      letter-spacing:.02em;
+    }
+    .jp-soft{
+      font-family:"KleeOneLocal","Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+      font-weight:400;
     }
     .wrap{max-width:1180px;margin:0 auto;padding:18px 14px 40px}
     .hero{
@@ -113,7 +129,30 @@
     textarea{min-height:78px;resize:vertical}
     .hint{font-size:13px;color:var(--sub);line-height:1.6}
     .foot{margin-top:10px;font-size:12px;color:var(--sub);line-height:1.7}
-    @media (max-width:950px){.layout{grid-template-columns:1fr}.stat-grid{grid-template-columns:repeat(2,1fr)}.choices{grid-template-columns:1fr}.big{font-size:42px}.mid{font-size:22px}.write-grid{grid-template-columns:repeat(2,1fr)}}
+    .draw-wrap{display:grid;gap:12px}
+    .draw-head{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap
+    }
+    .draw-tools{display:flex;gap:8px;flex-wrap:wrap}
+    .tool-btn{
+      border:none;cursor:pointer;transition:.18s ease;font-weight:700;
+      border-radius:999px;padding:9px 12px;background:#fff;color:var(--pink);border:2px solid var(--line)
+    }
+    .tool-btn.active{background:var(--pink);color:#fff;border-color:var(--pink)}
+    .draw-stage{
+      background:#fffafc;border:2px solid var(--pink3);border-radius:22px;padding:12px
+    }
+    .draw-canvas{
+      width:100%;height:280px;display:block;background:
+      linear-gradient(90deg,transparent 49.5%,#f9d6e6 49.5%,#f9d6e6 50.5%,transparent 50.5%),
+      linear-gradient(transparent 49.5%,#f9d6e6 49.5%,#f9d6e6 50.5%,transparent 50.5%),
+      #fff;
+      border:2px dashed #f0b9d2;border-radius:18px;touch-action:none;
+    }
+    .draw-note{
+      font-size:12px;color:var(--sub);line-height:1.7
+    }
+    @media (max-width:950px){.layout{grid-template-columns:1fr}.stat-grid{grid-template-columns:repeat(2,1fr)}.choices{grid-template-columns:1fr}.big{font-size:42px}.mid{font-size:22px}.write-grid{grid-template-columns:repeat(2,1fr)}.draw-canvas{height:240px}}
   </style>
 </head>
 <body>
@@ -157,6 +196,28 @@
             <div class="stat"><div class="n" id="solvedCount">0</div><div>맞힘</div></div>
             <div class="stat"><div class="n" id="wrongCount">0</div><div>오답</div></div>
             <div class="stat"><div class="n" id="currentCount">0</div><div>현재</div></div>
+          </div>
+        </section>
+
+        
+        <section class="card">
+          <h3 class="section-title">🖊️ 손글씨 연습</h3>
+          <div class="draw-wrap">
+            <div class="draw-head">
+              <div class="hint">옆 배너처럼 바로 써보는 미니 그림판이야. 펜/지우개/전체지우기 가능해 ✨</div>
+              <div class="draw-tools">
+                <button class="tool-btn active" id="penBtn">펜</button>
+                <button class="tool-btn" id="eraserBtn">지우개</button>
+                <button class="tool-btn" id="clearCanvasBtn">전체 지우기</button>
+              </div>
+            </div>
+            <div class="draw-stage">
+              <canvas id="drawCanvas" class="draw-canvas" width="520" height="280"></canvas>
+            </div>
+            <div class="draw-note">
+              일본어 단어 보고 옆에서 바로 써볼 수 있게 붙였어 💗
+              저장 기능 없이 연습용으로 가볍게 쓰기 좋게 만들었어.
+            </div>
           </div>
         </section>
 
@@ -431,9 +492,9 @@
       return `
         <div class="study-box">
           <div class="label">플래시카드</div>
-          <div class="big">${card.kanji}</div>
+          <div class="big jp">${card.kanji}</div>
           <div class="meta">
-            <div class="chip"><div class="label">읽기</div><div class="mid">${reveal ? card.reading : '???'}</div></div>
+            <div class="chip"><div class="label">읽기</div><div class="mid jp-soft">${reveal ? card.reading : '???'}</div></div>
             <div class="chip"><div class="label">뜻</div><div class="mid" style="font-size:18px">${reveal ? card.meaning : '가리고 외워보기'}</div></div>
           </div>
         </div>
@@ -447,10 +508,10 @@
       return `
         <div class="quiz-box">
           <div class="label">${label}</div>
-          <div class="big">${prompt}</div>
+          <div class="big jp">${prompt}</div>
           <div class="meta">
             <div class="chip"><div class="label">뜻</div><div class="mid" style="font-size:18px">${card.meaning}</div></div>
-            <div class="chip"><div class="label">정답 보기</div><div class="mid" style="font-size:18px">${reveal ? want : '선택 후 확인'}</div></div>
+            <div class="chip"><div class="label">정답 보기</div><div class="mid jp-soft" style="font-size:18px">${reveal ? want : '선택 후 확인'}</div></div>
           </div>
           <div class="choices" id="choicesArea"></div>
           <div id="answerArea"></div>
@@ -462,15 +523,15 @@
       return `
         <div class="write-box">
           <div class="label">종이에 직접 쓰기 모드</div>
-          <div class="mid">문제: <b>${Math.random() < 0.5 ? card.kanji : card.reading}</b></div>
+          <div class="mid">문제: <b class="jp">${Math.random() < 0.5 ? card.kanji : card.reading}</b></div>
           <div class="hint" style="margin-top:8px">종이에 직접 써보고, 아래 정답 보기로 확인해줘 ✍️ 시험이 실제 쓰기라서 이 방식이 제일 효율적이야.</div>
           <div class="write-grid">
             <div class="square"></div><div class="square"></div><div class="square"></div><div class="square"></div>
           </div>
           <div class="stroke-box" style="margin-top:14px">
             <div class="label">정답 / 체크</div>
-            <div class="mid" style="font-size:20px">한자: ${reveal ? card.kanji : '가리고 써보기'} </div>
-            <div class="mid" style="font-size:20px;margin-top:8px">히라가나: ${reveal ? card.reading : '가리고 써보기'} </div>
+            <div class="mid" style="font-size:20px">한자: <span class="jp">${reveal ? card.kanji : '가리고 써보기'}</span> </div>
+            <div class="mid" style="font-size:20px;margin-top:8px">히라가나: <span class="jp-soft">${reveal ? card.reading : '가리고 써보기'}</span> </div>
             <div class="mid" style="font-size:16px;margin-top:8px">뜻: ${reveal ? card.meaning : '가리고 써보기'} </div>
           </div>
         </div>
@@ -483,8 +544,8 @@
           ${list.map(item => `
             <div class="vocab-item">
               <div>
-                <div class="vocab-main">${item.kanji}</div>
-                <div class="vocab-sub">${item.reading} · ${item.meaning}</div>
+                <div class="vocab-main jp">${item.kanji}</div>
+                <div class="vocab-sub"><span class="jp-soft">${item.reading}</span> · ${item.meaning}</div>
               </div>
               <div class="badge">단어</div>
             </div>
@@ -519,6 +580,7 @@
           const b = document.createElement("button");
           b.className = "choice";
           b.textContent = choice;
+          b.classList.add("jp-soft");
           b.onclick = () => {
             if(currentAnswered) return;
             currentAnswered = true;
@@ -527,12 +589,12 @@
               b.classList.add("correct");
               solved[cardId(card2)] = true;
               save();
-              answerArea.innerHTML = `<div class="answer-msg ok">정답이야 🌟<br>${card2.kanji} → ${card2.reading}<br>${card2.meaning}</div>`;
+              answerArea.innerHTML = `<div class="answer-msg ok">정답이야 🌟<br><span class="jp">${card2.kanji}</span> → <span class="jp-soft">${card2.reading}</span><br>${card2.meaning}</div>`;
             } else {
               b.classList.add("wrong");
               [...choicesArea.children].forEach(el => { if(el.textContent === correct) el.classList.add("correct"); });
               markWrong(card2, prompt, correct);
-              answerArea.innerHTML = `<div class="answer-msg bad">오답이야 💦<br>정답: ${correct}<br>${card2.kanji} · ${card2.reading} · ${card2.meaning}</div>`;
+              answerArea.innerHTML = `<div class="answer-msg bad">오답이야 💦<br>정답: <span class="jp-soft">${correct}</span><br><span class="jp">${card2.kanji}</span> · <span class="jp-soft">${card2.reading}</span> · ${card2.meaning}</div>`;
             }
             renderStats();
           };
@@ -550,8 +612,8 @@
       wrap.innerHTML = wrongNotes.map((w, idx) => `
         <div class="wrong-item">
           <div class="badge">${w.tab}</div>
-          <div style="margin-top:8px;font-weight:800">${w.kanji}</div>
-          <div class="subtext" style="margin-top:4px">${w.reading} · ${w.meaning}</div>
+          <div style="margin-top:8px;font-weight:800" class="jp">${w.kanji}</div>
+          <div class="subtext" style="margin-top:4px"><span class="jp-soft">${w.reading}</span> · ${w.meaning}</div>
           <div class="subtext" style="margin-top:8px"><b>문제:</b> ${w.prompt}</div>
           <div class="subtext"><b>정답:</b> ${w.correct}</div>
           <div style="margin-top:8px"><button class="mini-btn" data-del="${idx}">삭제</button></div>
@@ -614,8 +676,80 @@
     };
     document.getElementById("addBtn").onclick = addCard;
 
+
+    function setupDrawBoard(){
+      const canvas = document.getElementById("drawCanvas");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const cssWidth = rect.width || 520;
+      const cssHeight = rect.height || 280;
+      canvas.width = Math.floor(cssWidth * ratio);
+      canvas.height = Math.floor(cssHeight * ratio);
+      ctx.setTransform(ratio,0,0,ratio,0,0);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      let drawing = false;
+      let erasing = false;
+      let lastX = 0;
+      let lastY = 0;
+
+      function getPos(e){
+        const r = canvas.getBoundingClientRect();
+        const point = e.touches ? e.touches[0] : e;
+        return {x: point.clientX - r.left, y: point.clientY - r.top};
+      }
+      function start(e){
+        drawing = true;
+        const p = getPos(e);
+        lastX = p.x;
+        lastY = p.y;
+      }
+      function move(e){
+        if(!drawing) return;
+        e.preventDefault();
+        const p = getPos(e);
+        ctx.globalCompositeOperation = erasing ? "destination-out" : "source-over";
+        ctx.strokeStyle = erasing ? "rgba(0,0,0,1)" : "#5a3550";
+        ctx.lineWidth = erasing ? 18 : 3.5;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        lastX = p.x;
+        lastY = p.y;
+      }
+      function end(){ drawing = false; }
+
+      function setTool(next){
+        erasing = next === "eraser";
+        document.getElementById("penBtn").classList.toggle("active", !erasing);
+        document.getElementById("eraserBtn").classList.toggle("active", erasing);
+      }
+
+      document.getElementById("penBtn").onclick = () => setTool("pen");
+      document.getElementById("eraserBtn").onclick = () => setTool("eraser");
+      document.getElementById("clearCanvasBtn").onclick = () => ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      canvas.addEventListener("mousedown", start);
+      canvas.addEventListener("mousemove", move);
+      window.addEventListener("mouseup", end);
+      canvas.addEventListener("mouseleave", end);
+
+      canvas.addEventListener("touchstart", start, {passive:false});
+      canvas.addEventListener("touchmove", move, {passive:false});
+      window.addEventListener("touchend", end);
+      canvas.addEventListener("touchcancel", end);
+
+      setTool("pen");
+    }
+
+
     prepareChoices();
     render();
+    setupDrawBoard();
   </script>
 </body>
 </html>
